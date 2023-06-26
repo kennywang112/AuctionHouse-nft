@@ -59,30 +59,30 @@ async function AH(index) {
     }
   }
   floor_price.value = floor_price.value /100000000
-
+  console.log(wallet)
   console.log(metaplex.identity())
 }
 async function Buy_NFT(index) {
-  console.log(metaplex)
+  // console.log(metaplex)
   // wallet.publicKey = new PublicKey('Se9gzT3Ep3E452LPyYaWKYqcCvsAwtHhRQwQvmoXFxG')
   console.log(metaplex.identity())
-  const auctionHouse = await metaplex
-      .auctionHouse()
-      .findByAddress({ address: new PublicKey("DrLvt1M5qENHS6g9LSwzcWygo2Hb84a4AaSACvoS4a1") });
-  const listing = await metaplex
-    .auctionHouse()
-    .findListingByReceipt({ receiptAddress:new PublicKey(infos[index].receiptAddress), auctionHouse:auctionHouse });
-  const directBuyResponse = await metaplex
-      .auctionHouse()
-      .buy({
-        auctionHouse:auctionHouse, 
-        buyer:metaplex.identity(),
-        authority: auctionHouse.authorityAddress, 
-        listing: listing,               
-        // price: lamports(infos[index].price.basisPoints.words[0]),   
-        // bookkeeper: metaplex.identity(),
-        // printReceipt: true                   
-      });
+  // const auctionHouse = await metaplex
+  //     .auctionHouse()
+  //     .findByAddress({ address: new PublicKey("DrLvt1M5qENHS6g9LSwzcWygo2Hb84a4AaSACvoS4a1") });
+  // const listing = await metaplex
+  //   .auctionHouse()
+  //   .findListingByReceipt({ receiptAddress:new PublicKey(infos[index].receiptAddress), auctionHouse:auctionHouse });
+  // const directBuyResponse = await metaplex
+  //     .auctionHouse()
+  //     .buy({
+  //       auctionHouse:auctionHouse, 
+  //       buyer:metaplex.identity(),
+  //       authority: auctionHouse.authorityAddress, 
+  //       listing: listing,               
+  //       // price: lamports(infos[index].price.basisPoints.words[0]),   
+  //       // bookkeeper: metaplex.identity(),
+  //       // printReceipt: true                   
+  //     });
   console.log('success')
 }
 async function Bid_NFT(index) {
