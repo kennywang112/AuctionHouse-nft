@@ -1,18 +1,52 @@
 <script setup>
-import SignMessage from '../components/SignMessage';
-import SendTransaction from '../components/ClaimToken';
+import MyNfts from '../views/MyNfts.vue';
+import store from '../vuex'
+import pkg from '../../package.json';
+import tohome from '../components/ToHome'
+import { WalletMultiButton } from 'solana-wallets-vue'
 </script>
 
 <template>
-    <div class="md:hero mx-auto p-4">
-        <div class="md:hero-content flex flex-col">
-            <h1 class="text-center text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-tr from-[#9945FF] to-[#14F195]">
-                Basics
-            </h1>
-            <div class="text-center">
-                <sign-message></sign-message>
-                <send-transaction></send-transaction>
-            </div>
+<div>
+  <div>
+    <div class="header">
+    <h1 class="game-tit1">
+      <img src="../assets/images/favicon.png" alt="Auction House" class="img-size" />
+    <span class="focus"> Auction </span>
+    House
+  </h1>
+  <div class="profile">
+    <tohome />
+    <div class="header-right">
+        <div>
+        </div >
+        <wallet-multi-button></wallet-multi-button>
       </div>
+  </div>
+  <hr>
+  </div>
+    <div class="text-center">
+        <my-nfts></my-nfts>
     </div>
+  </div>
+</div>
 </template>
+<style>
+.img-size {
+    width: 30px; /* 设置宽度 */
+    height: 30px; /* 设置高度 */
+}
+.text-center {
+  display: flex;
+  justify-content: center;
+}
+.profile {
+  position: absolute;
+  right: 0;
+}
+.header {
+  display: flex;
+  justify-content: space-between; /* 左右排列 */
+  align-items: center;
+}
+</style>

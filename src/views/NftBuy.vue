@@ -1,9 +1,8 @@
 <script setup>
-import { ref, onMounted,toRefs } from 'vue';
+import { ref, onMounted,toRefs,computed } from 'vue';
 import { useWallet } from 'solana-wallets-vue';
 import { Connection, clusterApiUrl, PublicKey ,Keypair,Transaction} from '@solana/web3.js';
 import { Metaplex, walletAdapterIdentity,lamports,keypairIdentity,guestIdentity } from "@metaplex-foundation/js";
-import second from '../components/SecondRow'
 import bs58 from 'bs58'
 import jsonData from '../../k.json';
 import { initWallet } from 'solana-wallets-vue';
@@ -41,7 +40,7 @@ async function AH(index) {
     nft = await metaplex
       .auctionHouse()
       .findListingByReceipt({ auctionHouse, receiptAddress: new PublicKey(listing.receiptAddress.toString()) });
-    if (!nft.purchaseReceiptAddress & nft.asset.collection.address.toString()==='7Wu5usHGU95vvyNHku8Rst5eVKdvoCCGHrUJ5qiaPXqG') { //過濾已經售出和titanium collection
+    if (!nft.purchaseReceiptAddress & nft.asset.collection.address.toString()==='GWqTyimCmP7oFSP2uzxfAGWoCkv38sKPF6jkYEiFqJBz') { //過濾已經售出和titanium collection
       return nft;
     }
   });
@@ -59,49 +58,53 @@ async function AH(index) {
     }
   }
   floor_price.value = floor_price.value /100000000
-  console.log(wallet)
-  console.log(metaplex.identity())
+  //console.log(toRefs(metaplex.identity())._driver.value.walletAdapter)
+
+  wallet.signTransaction = wallet.signTransaction.value
+  wallet.publicKey = metaplex.identity().publicKey.value
+  console.log( wallet )
+  console.log( metaplex.identity() )
 }
 async function Buy_NFT(index) {
-  // console.log(metaplex)
-  // wallet.publicKey = new PublicKey('Se9gzT3Ep3E452LPyYaWKYqcCvsAwtHhRQwQvmoXFxG')
   console.log(metaplex.identity())
-  // const auctionHouse = await metaplex
-  //     .auctionHouse()
-  //     .findByAddress({ address: new PublicKey("DrLvt1M5qENHS6g9LSwzcWygo2Hb84a4AaSACvoS4a1") });
-  // const listing = await metaplex
-  //   .auctionHouse()
-  //   .findListingByReceipt({ receiptAddress:new PublicKey(infos[index].receiptAddress), auctionHouse:auctionHouse });
-  // const directBuyResponse = await metaplex
-  //     .auctionHouse()
-  //     .buy({
-  //       auctionHouse:auctionHouse, 
-  //       buyer:metaplex.identity(),
-  //       authority: auctionHouse.authorityAddress, 
-  //       listing: listing,               
-  //       // price: lamports(infos[index].price.basisPoints.words[0]),   
-  //       // bookkeeper: metaplex.identity(),
-  //       // printReceipt: true                   
-  //     });
+  const auctionHouse = await metaplex
+      .auctionHouse()
+      .findByAddress({ address: new PublicKey("DrLvt1M5qENHS6g9LSwzcWygo2Hb84a4AaSACvoS4a1") });
+  const listing = await metaplex
+    .auctionHouse()
+    .findListingByReceipt({ receiptAddress:new PublicKey(infos[index].receiptAddress), auctionHouse:auctionHouse });
+  const directBuyResponse = await metaplex
+      .auctionHouse()
+      .buy({
+        auctionHouse:auctionHouse, 
+        // buyer:toRefs(metaplex.identity())._driver._object,
+        buyer:metaplex.identity(),
+        authority: auctionHouse.authorityAddress, 
+        listing: listing,               
+        // price: lamports(infos[index].price.basisPoints.words[0]),   
+        // bookkeeper: metaplex.identity(),
+        // printReceipt: true                   
+      });
   console.log('success')
 }
-async function Bid_NFT(index) {
-  // console.log('auction house :',auctionHouse)
-  // console.log('buyer :',metaplex.identity())
-  // console.log('listing nft :',nft)
-  // const bid = await metaplex
-  //   .auctionHouse()
-  //   .bid({
-  //     auctionHouse:auctionHouse, 
-  //     seller:new PublicKey('F4rMWNogrJ7bsknYCKEkDiRbTS9voM7gKU2rcTDwzuwf'),  
-  //     buyer : metaplex.identity(),
-  //     authority: auctionHouse.authorityAddress,
-  //     // printReceipt:true,
-  //     mintAccount: new PublicKey(infos[index].asset.address),                     
-  //     price:lamports(10000000),
-  //     // //tokens: 1,    
-  //     bookkeeper: metaplex.identity()   
-  //   });
+async function Bid_NFT(index,yourBidValue) {
+  console.log(infos[index])
+  const auctionHouse = await metaplex
+      .auctionHouse()
+      .findByAddress({ address: new PublicKey("DrLvt1M5qENHS6g9LSwzcWygo2Hb84a4AaSACvoS4a1") });
+  const bid = await metaplex
+    .auctionHouse()
+    .bid({
+      auctionHouse:auctionHouse, 
+      seller:new PublicKey('F4rMWNogrJ7bsknYCKEkDiRbTS9voM7gKU2rcTDwzuwf'),  
+      buyer : metaplex.identity(),
+      authority: auctionHouse.authorityAddress,
+      // printReceipt:true,
+      mintAccount: new PublicKey(infos[index].asset.address),                     
+      price:lamports(yourBidValue*1000000000),
+      // //tokens: 1,    
+      bookkeeper: metaplex.identity()   
+    });
 }
 onMounted(AH);
 </script>
@@ -112,6 +115,7 @@ export default {
     return {
       showOverlay: false, // 控制是否显示弹出区块
       currentBlock: 'List',
+      bidValue: '', 
     };
   },
   methods: {
@@ -141,7 +145,7 @@ export default {
       <div class="left-content">
         <div class="collect">
           <img src="../assets/images/favicon.png" alt="Auction House" class="collection_image"/>
-            <p class="game-tit1">Number collections</p>
+            <p class="game-tit1">Titanium collections</p>
             <div class="informations">
               <p >{{ floor_price }}<br>floor price</p>
               <p >{{ floor_price }}<br>sell now</p>
@@ -235,7 +239,8 @@ export default {
             MINT ADDRESS : {{ nftImages[selectedNFTIndex].asset.address.toString() }}
           </div>
           <div class="btn gameStartBtn">
-            <button @click="Bid_NFT(selectedNFTIndex)">
+            <input type="number" v-model="yourBidValue" placeholder="Enter your bid" />
+            <button @click="Bid_NFT(selectedNFTIndex,yourBidValue)">
                 Bid
             </button>
           </div>

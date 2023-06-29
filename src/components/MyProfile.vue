@@ -9,7 +9,7 @@
 export default {
     methods: {
     redirectToProfile() {
-      this.$router.push({ path: '/profile' });
+      this.$router.push({ path: '/basic' });
     },
   }
 }

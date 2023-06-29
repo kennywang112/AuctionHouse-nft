@@ -1,8 +1,15 @@
 <template>
-<div class="image-container itemBlock type2 hasCorner1 hasCorner1">
-    <div v-for="(nft, index) in nftImages" :key="index" >
-            <img :src="nft" alt="NFT Image" class="nft-image" @click="Get_NFT_Info(index)">
-        </div>
+<div>
+    <div class="image-container itemBlock type2 hasCorner1">
+        <div v-for="(nft, index) in nftImages" :key="index" >
+                <img :src="nft.json.image" alt="NFT Image" class="nft-image" :class="{ active: isActive[index] }" @click="toggleActive(index)">
+            </div>
+    </div>
+    <div class="btn gameStartBtn">
+        <button @click="find_nft" >Sync NFTs</button>
+        <button @click="goBack">Go Back</button>
+        <button @click="List(index)">List</button>
+    </div>
 </div>
 </template>
 
@@ -10,41 +17,101 @@
 import { ref, onMounted } from 'vue';
 import { useWallet } from 'solana-wallets-vue';
 import { Connection, clusterApiUrl, PublicKey } from '@solana/web3.js';
-import { Metaplex, walletAdapterIdentity } from "@metaplex-foundation/js";
+import { Metaplex, walletAdapterIdentity,lamports } from "@metaplex-foundation/js";
+import { useRouter } from 'vue-router';
 
+const router = useRouter();
 const nftImages = ref([]);
+const isActive = ref([]);
 const wallet = useWallet();
-const connection = new Connection(clusterApiUrl('devnet'));
+const connection = new Connection(clusterApiUrl('devnet'), "confirmed");
 const metaplex = new Metaplex(connection);
 metaplex.use(walletAdapterIdentity(wallet));
+let infos = [];
+let selectedNFTIndex = null;
 
 async function find_nft() {
     if (!wallet.publicKey) {
         console.log('error', `Send Transaction: Wallet not connected!`);
         return;
     }
-
     const all_nft = await metaplex.nfts().findAllByOwner({
         owner: metaplex.identity().publicKey.value
     });
-    console.log(all_nft)
     const nftImagesPromises = all_nft.map(async (nft) => {
-        const nftData = await metaplex.nfts().findByMint({
-        mintAddress: new PublicKey(nft.mintAddress.toString())
-        });
-        return nftData.json.image;
+        if(nft.collection !==null){
+            if (nft.collection.address.toString()==='GWqTyimCmP7oFSP2uzxfAGWoCkv38sKPF6jkYEiFqJBz'){
+                const nftData = await metaplex.nfts().findByMint({
+                    mintAddress: new PublicKey(nft.mintAddress.toString())
+                    });
+                return nftData
+                }
+        }
     });
 
     const profilenfts = await Promise.all(nftImagesPromises);
-    nftImages.value = profilenfts
-    console.log(nftImages);
+    const filteredprofilenft = profilenfts.filter(function(value) {
+    return value !== undefined;
+    });
+    infos = filteredprofilenft 
+    nftImages.value = filteredprofilenft
 
+    isActive.value = Array(filteredprofilenft.length).fill(false);
   }
 
-onMounted(find_nft);
+function goBack() {
+  router.push('/');
+}
+function find_index(index) {
+  selectedNFTIndex = index
+}
+function toggleActive(index) {
+  isActive.value = isActive.value.map((value, idx) => idx === index);
+  find_index(index); // 执行Get_NFT_Info函数
+}
 
+async function List() {
+  wallet.signTransaction = wallet.signTransaction.value
+  wallet.publicKey = metaplex.identity().publicKey.value
+  const auctionHouse = await metaplex
+    .auctionHouse()
+    .findByAddress({ address: new PublicKey("DYJGVipuxyXpJoPqzFLq44e5xJWRzao6qu12TTioAMWq") });
+  const list = await metaplex
+      .auctionHouse()
+      .list({
+        auctionHouse:auctionHouse,  
+        seller: metaplex.identity(),
+        authority: auctionHouse.authorityAddress,
+        //printReceipt:true,
+        bookkeeper:metaplex.identity(),     
+        mintAccount:infos[selectedNFTIndex].address,
+        price:lamports(10000000)
+      })
+  console.log(list)
+}
 </script>
 
 <style>
-
+.image-container {/*放置所有nft的區塊*/
+  gap: 0px;/* 照片中間的空格 */
+  /* flex-direction: row;  改成下面的wrap讓他可以換行*/
+  flex-wrap: wrap;
+  display: flex;
+  overflow-x: auto; /*滾動*/
+  height: 700px;
+  width: 1500px;
+}
+.container {
+  display: flex;
+  flex: 1;
+}
+.collect {
+  display: flex; 
+  align-items: center; 
+  text-align: left;
+  padding-left: 20px;
+}
+.nft-image.active {
+  border: 2px solid rgb(151, 151, 228); /* 添加选中时的边框样式 */
+}
 </style>

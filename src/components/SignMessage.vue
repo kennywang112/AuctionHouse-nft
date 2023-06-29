@@ -2,6 +2,7 @@
 import { useWallet } from 'solana-wallets-vue'
 import { Connection, SystemProgram,Keypair,clusterApiUrl, Transaction,PublicKey } from '@solana/web3.js';
 import { getOrCreateAssociatedTokenAccount,createTransferInstruction, transfer } from '@solana/spl-token';
+import { Metaplex, walletAdapterIdentity,lamports,keypairIdentity,guestIdentity } from "@metaplex-foundation/js";
 import bs58 from "bs58";
 import { ref } from 'vue'
 import axios from 'axios'
@@ -46,50 +47,54 @@ const onClick = async () => {
     }
     let signature = '';
     try {
-        var bytes  = CryptoJS.AES.decrypt(process.env.VUE_APP_SECRET_CRYPTION, process.env.VUE_APP_CRYPTION);
-        var SecretKey = bytes.toString(CryptoJS.enc.Utf8);
-        const myWalletSecretKey = bs58.decode(SecretKey);
-        const fromWallet = Keypair.fromSecretKey(myWalletSecretKey);
-        const mint =new PublicKey('HpgFJcyBpAAFKMHFjp5Lq3KaCiAqhgcV5SLV5GmjAoi9')
-        const QUICKNODE_RPC = process.env.VUE_APP_RPC;
-        const connection = new Connection(QUICKNODE_RPC, 'confirmed');
-        const fromTokenAccount = await getOrCreateAssociatedTokenAccount(
-            connection,
-            fromWallet,
-            mint,
-            fromWallet.publicKey
-            );
-        const toTokenAccount = await getOrCreateAssociatedTokenAccount(
-            connection,
-            fromWallet,
-            mint, 
-            publicKey.value
-            );
-            console.log(`Creating and Sending Transaction`);
-        console.log(new web3.PublicKey(wallet.publicKey.value.toString()))
-        const transaction = web3.SystemProgram.transfer({
-            fromPubkey: new web3.PublicKey(wallet.publicKey.value.toString()),
-            toPubkey: new web3.PublicKey("9MMdJHMK22JtrU8H4QLFYgZUoFcwXtutvjtrVNcjcRc9"),
-            lamports: web3.LAMPORTS_PER_SOL / 1000*2,
-        });
-        const tx = new Transaction().add(
-            transaction,
-            createTransferInstruction(
-            fromTokenAccount.address,
-            toTokenAccount.address,
-            fromWallet.publicKey,
-            1000000000*num.value,)
-        )
-        const latestBlockHash = await connection.getLatestBlockhash('confirmed');
-        tx.recentBlockhash = latestBlockHash.blockhash;    
-        tx.feePayer = publicKey.value;
-        console.log(tx)
-        signature = await sendTransaction(
-            tx,
-            connection,
-            {
-            signers: web3.Signer
-            })
+        // var bytes  = CryptoJS.AES.decrypt(process.env.VUE_APP_SECRET_CRYPTION, process.env.VUE_APP_CRYPTION);
+        // var SecretKey = bytes.toString(CryptoJS.enc.Utf8);
+        // const myWalletSecretKey = bs58.decode(SecretKey);
+        // const fromWallet = Keypair.fromSecretKey(myWalletSecretKey);
+        // const mint =new PublicKey('HpgFJcyBpAAFKMHFjp5Lq3KaCiAqhgcV5SLV5GmjAoi9')
+        // const QUICKNODE_RPC = process.env.VUE_APP_RPC;
+        const connection = new Connection(clusterApiUrl('devnet'), 'confirmed');
+        const wallet = useWallet();
+        const metaplex = new Metaplex(connection);
+        metaplex.use(walletAdapterIdentity(wallet))
+        console.log(metaplex.identity())
+        // const fromTokenAccount = await getOrCreateAssociatedTokenAccount(
+        //     connection,
+        //     fromWallet,
+        //     mint,
+        //     fromWallet.publicKey
+        //     );
+        // const toTokenAccount = await getOrCreateAssociatedTokenAccount(
+        //     connection,
+        //     fromWallet,
+        //     mint, 
+        //     publicKey.value
+        //     );
+        //     console.log(`Creating and Sending Transaction`);
+        // console.log(new web3.PublicKey(wallet.publicKey.value.toString()))
+        // const transaction = web3.SystemProgram.transfer({
+        //     fromPubkey: new web3.PublicKey(wallet.publicKey.value.toString()),
+        //     toPubkey: new web3.PublicKey("9MMdJHMK22JtrU8H4QLFYgZUoFcwXtutvjtrVNcjcRc9"),
+        //     lamports: web3.LAMPORTS_PER_SOL / 1000*2,
+        // });
+        // const tx = new Transaction().add(
+        //     transaction,
+        //     createTransferInstruction(
+        //     fromTokenAccount.address,
+        //     toTokenAccount.address,
+        //     fromWallet.publicKey,
+        //     1000000000*num.value,)
+        // )
+        // const latestBlockHash = await connection.getLatestBlockhash('confirmed');
+        // tx.recentBlockhash = latestBlockHash.blockhash;    
+        // tx.feePayer = publicKey.value;
+        // console.log(tx)
+        // signature = await sendTransaction(
+        //     tx,
+        //     connection,
+        //     {
+        //     signers: web3.Signer
+        //     })
         console.log('finish transfer')
 
     } catch (error) {
