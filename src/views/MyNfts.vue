@@ -8,7 +8,8 @@
     <div class="btn gameStartBtn">
         <button @click="find_nft" >Sync NFTs</button>
         <button @click="goBack">Go Back</button>
-        <button @click="List(index)">List</button>
+        <input type="number" v-model="yourListValue" placeholder="Enter your bid" />
+        <button @click="List(index,yourListValue)">List</button>
     </div>
 </div>
 </template>
@@ -70,12 +71,12 @@ function toggleActive(index) {
   find_index(index); // 执行Get_NFT_Info函数
 }
 
-async function List() {
+async function List(index,yourListValue) {
   wallet.signTransaction = wallet.signTransaction.value
   wallet.publicKey = metaplex.identity().publicKey.value
   const auctionHouse = await metaplex
     .auctionHouse()
-    .findByAddress({ address: new PublicKey("DYJGVipuxyXpJoPqzFLq44e5xJWRzao6qu12TTioAMWq") });
+    .findByAddress({ address: new PublicKey("DrLvt1M5qENHS6g9LSwzcWygo2Hb84a4AaSACvoS4a1") });
   const list = await metaplex
       .auctionHouse()
       .list({
@@ -85,7 +86,7 @@ async function List() {
         //printReceipt:true,
         bookkeeper:metaplex.identity(),     
         mintAccount:infos[selectedNFTIndex].address,
-        price:lamports(10000000)
+        price:lamports(yourListValue*1000000000)
       })
   console.log(list)
 }

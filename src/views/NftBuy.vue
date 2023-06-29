@@ -62,8 +62,15 @@ async function AH(index) {
 
   wallet.signTransaction = wallet.signTransaction.value
   wallet.publicKey = metaplex.identity().publicKey.value
-  console.log( wallet )
-  console.log( metaplex.identity() )
+
+ 
+  const bids = await metaplex
+  .auctionHouse()
+  .findBids({ auctionHouse });
+  const ssss = await metaplex
+  .auctionHouse()
+  .findBidByReceipt({ receiptAddress:bids[2].receiptAddress, auctionHouse });
+  console.log( bids )
 }
 async function Buy_NFT(index) {
   console.log(metaplex.identity())
@@ -105,6 +112,34 @@ async function Bid_NFT(index,yourBidValue) {
       // //tokens: 1,    
       bookkeeper: metaplex.identity()   
     });
+}
+async function Sell(index) {
+  console.log(index)
+  const auctionHouse = await metaplex
+      .auctionHouse()
+      .findByAddress({ address: new PublicKey("DrLvt1M5qENHS6g9LSwzcWygo2Hb84a4AaSACvoS4a1") });
+  const bid = await metaplex
+    .auctionHouse()
+    .findBidByReceipt({
+      auctionHouse:auctionHouse,
+      receiptAddress:new PublicKey('Hc1Het3txoWwS7X6HpNNuAqQzFP7kjeraWA6feCXWa2j'),
+    })
+  // const listing = await metaplex
+  //   .auctionHouse()
+  //   .findListingByReceipt({
+  //     auctionHouse:auctionHouse,
+  //     receiptAddress:listings[index].receiptAddress,
+  //   })
+  const executeSaleResponse = await metaplex
+    .auctionHouse()
+    .executeSale({
+        auctionHouse:auctionHouse,
+        listing: infos[index],
+        bid: bid,
+        bookkeeper:metaplex.identity(),
+        printReceipt:true
+    });
+    console.log('finish')
 }
 onMounted(AH);
 </script>
@@ -168,7 +203,7 @@ export default {
             <div ><img :src="nft.asset.json.image" alt="NFT Image" class="nft-image" @click="showOverlayBlock(index)"></div>
             <div>
               <img src="../assets/images/favicon.png" alt="Auction House" class="img-size" />
-              <p >{{ nftImages[index].asset.name.replace('Number', '').trim() }}<br>{{ nftImages[index].price.basisPoints/100000000 }}</p>
+              <p >{{ nftImages[index].asset.name.replace('Number', '').trim() }}<br>{{ nftImages[index].price.basisPoints/1000000000 }} SOL</p>
             </div>
           </div>
       </div>
@@ -249,6 +284,11 @@ export default {
                 Buy
             </button>
           </div>
+          <div class="btn gameStartBtn">
+            <button @click="Sell(selectedNFTIndex)">
+                Sell
+            </button>
+          </div>
         </div>
       </div>
   </div>
@@ -265,7 +305,7 @@ export default {
   padding: 20px;
 }
 .right-content {
-  flex: 0.3;
+  flex: 1;
   position: relative;
   display: flex; /* 將父元素設置為 flex 容器 */
   justify-content: center; /* 將內容水平置中 */
